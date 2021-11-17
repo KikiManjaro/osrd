@@ -88,6 +88,34 @@ public class AllowanceTestsOnAllInfras {
         assertEquals(expected, test.testedTime(), 6);
     }
 
+    /** Tests stacking construction and linear margins */
+    @Property
+    public void testConstructionOnLinearMargin(
+            @ForAll("infraRootPaths") String rootPath,
+            @ForAll("secondsMarginValues") double value
+    ) {
+        value = 0;
+        // setup allowances
+        var linearAllowance = new RJSAllowance.LinearAllowance(TIME, 30);
+        var constructionAllowance = new RJSAllowance.ConstructionAllowance(value);
+        var allowances = new RJSAllowance[][] {
+                { linearAllowance },
+                { constructionAllowance },
+        };
+
+        // run the baseline and testing simulation
+        var testConfig = readConfig(rootPath);
+        var test = MarginTests.ComparativeTest.from(testConfig, () -> testConfig.setAllAllowances(allowances));
+
+        // check the results
+        var start = testConfig.rjsSimulation.trainSchedules.get(0).departureTime;
+        var expectedTime = (
+                start + (test.baseTime() - start) * (1. + linearAllowance.allowanceValue / 100.)
+                        + constructionAllowance.allowanceValue
+        );
+        assertEquals(expectedTime, test.testedTime(), expectedTime * 0.01);
+    }
+
     @Provide
     Arbitrary<String> infraRootPaths() {
         var infras = new ArrayList<String>();
