@@ -81,7 +81,7 @@ public class Helpers {
         return sim;
     }
 
-    private static final boolean saveCSVFiles = false;
+    private static final boolean saveCSVFiles = true;
 
     public static final class TestEvent extends TimelineEvent {
         public final String data;
@@ -370,7 +370,8 @@ public class Helpers {
     public static void assertLowerSpeedPerPositionBetween(Iterable<TimelineEvent> eventsBase,
                                                           Iterable<TimelineEvent> events,
                                                           double begin,
-                                                          double end) {
+                                                          double end,
+                                                          double precision) {
         var baseSpeedPerPosition = getSpeedPerPosition(eventsBase);
         var speedPerPosition = getSpeedPerPosition(events);
         end = Double.min(end, baseSpeedPerPosition.lastKey());
@@ -378,7 +379,7 @@ public class Helpers {
         for (double d = begin; d < end; d += 1) {
             var base = baseSpeedPerPosition.interpolate(d);
             var result = speedPerPosition.interpolate(d);
-            assert result - base <= 1E-2;
+            assert result - base <= precision;
         }
     }
 

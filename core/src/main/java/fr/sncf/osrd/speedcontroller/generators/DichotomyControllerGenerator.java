@@ -54,7 +54,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     }
 
     /** Gives the target run time for the phase, given the one if we follow max speeds */
-    protected abstract double getTargetTime();
+    protected abstract double getTargetTime(double baseTime, double distance);
 
     /** Returns the first lower bound for the dichotomy */
     protected abstract double getFirstLowEstimate();
@@ -81,8 +81,10 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var firstGuess = getFirstGuess();
 
         // base run
-        var time = evalRunTime(sim, schedule, maxSpeedControllers);
-        var targetTime = getTargetTime();
+        var times = getExpectedTimes(sim, schedule, maxSpeedControllers, TIME_STEP);
+        var time = times.lastEntry().getValue() - times.firstEntry().getValue();
+        var distance = times.lastEntry().getKey() - times.firstEntry().getKey();
+        var targetTime = getTargetTime(time, distance);
 
         double nextValue = firstGuess;
         var nextSpeedControllers = maxSpeedControllers;
@@ -95,6 +97,8 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
             else
                 higherBound = nextValue;
             nextValue = (lowerBound + higherBound) / 2;
+            saveGraph(nextSpeedControllers, sim, schedule,
+                    "C:\\Users\\9706809E\\OneDrive - SNCF\\Documents\\Physique\\Affichage_courbes\\graph" + i + ".csv");
             if (i++ > 20)
                 throw new RuntimeException("Did not converge");
         }

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.utils;
 
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class SortedDoubleMap extends TreeMap<Double, Double> {
@@ -13,6 +14,11 @@ public class SortedDoubleMap extends TreeMap<Double, Double> {
 
     /** Copy constructor */
     public SortedDoubleMap(TreeMap<Double, Double> other) {
+        super(other);
+    }
+
+    /** Copy constructor */
+    public SortedDoubleMap(SortedMap<Double, Double> other) {
         super(other);
     }
 

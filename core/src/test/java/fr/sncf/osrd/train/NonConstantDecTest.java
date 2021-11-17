@@ -218,7 +218,8 @@ public class NonConstantDecTest {
 
     /** Test mareco with different slopes*/
     @ParameterizedTest
-    @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
+    //@ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
+    @ValueSource(ints = {4})
     public void testDifferentSlopes(int slopeProfile, TestInfo info) {
         MarginTests.testDifferentSlopes(CONFIG_PATH, slopeProfile, info);
     }

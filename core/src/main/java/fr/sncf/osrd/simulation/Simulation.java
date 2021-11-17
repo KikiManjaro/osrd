@@ -52,6 +52,7 @@ public final class Simulation implements DeepComparable<Simulation> {
      * when an event is executed, the simulation time is changed to the event's time.
      */
     private double time;
+    public static final double timeStep = 2;
 
     public double getTime() {
         return time;

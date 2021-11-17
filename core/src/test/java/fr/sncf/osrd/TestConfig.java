@@ -38,7 +38,6 @@ public class TestConfig {
     public RJSSimulation rjsSimulation;
     public ChangeConsumer changeConsumer = null;
     public HashMap<String, RollingStock> extraRollingStocks;
-    public float timeStep = 1;
 
     private TestConfig(
             RJSInfra rjsInfra,
@@ -168,7 +167,6 @@ public class TestConfig {
 
             var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation, extraRollingStocks);
             var config = new Config(
-                    timeStep,
                     infra,
                     trainSchedules,
                     null,

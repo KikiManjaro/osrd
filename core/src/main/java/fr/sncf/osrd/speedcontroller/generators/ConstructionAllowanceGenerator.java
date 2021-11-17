@@ -30,8 +30,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     }
 
     @Override
-    protected double getTargetTime() {
-        var baseTime = evalRunTime(sim, schedule, maxSpeedControllers);
+    protected double getTargetTime(double baseTime, double distance) {
         return baseTime + value;
     }
 
@@ -66,27 +65,20 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var requiredBrakingDistance = Double.max(0,
                 computeBrakingDistance(initialPosition, endPosition, initialSpeed, targetSpeed, schedule));
         var endBrakingPosition = initialPosition + requiredBrakingDistance;
-
-        // running calculation starting where the braking ends, to create a scaled MapSpeedController from it
-        var roiSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, TIME_STEP,
-                endBrakingPosition, endPosition, initialSpeed);
-        double maxSpeed = max(roiSpeeds.values());
-        double scaleFactor = targetSpeed / maxSpeed; // Value proposed by Dichotomy / max speed
-        currentSpeedControllers.add(new MapSpeedController(roiSpeeds).scaled(scaleFactor));
         var res = new HashSet<>(maxSpeedControllers);
 
         if (endBrakingPosition != initialPosition) {
             SpeedController brakingSpeedController;
             if (schedule.rollingStock.gammaType == RollingStock.GammaType.CONST) {
                 brakingSpeedController = new LimitAnnounceSpeedController(
-                        initialSpeed * scaleFactor,
+                        targetSpeed,
                         initialPosition,
                         endBrakingPosition,
                         schedule.rollingStock.gamma);
             } else {
                 //TODO: optimise, this calculation is done twice
                 var updatesMap = getStepsAtPositionsToTarget(sim, schedule,
-                        initialPosition, initialSpeed, endBrakingPosition, initialSpeed * scaleFactor);
+                        initialPosition, initialSpeed, endBrakingPosition, targetSpeed);
                 var speeds = new SortedDoubleMap();
                 for (var k : updatesMap.keySet()) {
                     speeds.put(k, updatesMap.get(k).finalSpeed);
@@ -96,6 +88,13 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
             currentSpeedControllers.add(brakingSpeedController);
             res.add(brakingSpeedController);
         }
+
+        // running calculation starting where the braking ends, to create a scaled MapSpeedController from it
+        var roiSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, TIME_STEP,
+                endBrakingPosition, endPosition, initialSpeed);
+        double maxSpeed = max(roiSpeeds.values());
+        double scaleFactor = targetSpeed / maxSpeed; // Value proposed by Dichotomy / max speed
+        currentSpeedControllers.add(new MapSpeedController(roiSpeeds).scaled(scaleFactor));
 
         // new running calculation with brakingSpeedController + scaled MapSpeedController
         // now only the re-acceleration phase is missing
@@ -108,7 +107,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         while (speed > newSpeeds.interpolate(location.getPathPosition())
                 && location.getPathPosition() - speed * TIME_STEP > 1e-5
                 && speed >= 1e-5) {
-            var directive = new SpeedDirective(newSpeeds.interpolate(location.getPathPosition()));
+            double finalSpeed = speed;
             var step = nextStep(
                     location,
                     speed,
@@ -116,15 +115,13 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
                     TIME_STEP,
                     location.getPathPosition(),
                     -1,
-                    (integrator) -> integrator.actionToTargetSpeed(directive, schedule.rollingStock, -1));
+                    (integrator) -> Action.accelerate(schedule.rollingStock.getMaxEffort(finalSpeed)));
             speed = step.finalSpeed;
             location.updatePosition(schedule.rollingStock.length, step.positionDelta);
         }
 
-        var initialSpeedControllers = new HashSet<>(maxSpeedControllers);
         // scaled MapSpeedControllers only between the end of the braking phase and the beginning of the acceleration
-        var speedsEndingEarlier = getExpectedSpeeds(sim, schedule, initialSpeedControllers, TIME_STEP,
-                endBrakingPosition, location.getPathPosition(), initialSpeed);
+        var speedsEndingEarlier = new SortedDoubleMap(roiSpeeds.subMap(endBrakingPosition, location.getPathPosition()));
         speedsEndingEarlier.put(endBrakingPosition, targetSpeed); // add first point to the future MapSpeedController
         res.add(new MapSpeedController(speedsEndingEarlier).scaled(scaleFactor));
 

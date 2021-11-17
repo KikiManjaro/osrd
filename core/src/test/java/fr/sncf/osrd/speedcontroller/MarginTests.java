@@ -4,6 +4,7 @@ import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.DISTANCE;
 import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static fr.sncf.osrd.simulation.Simulation.timeStep;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
@@ -56,8 +57,8 @@ public class MarginTests {
         public void saveGraphs(TestInfo testInfo) {
             var testName = testInfo.getTestMethod().orElseThrow().getName();
 
-            saveGraph(baseEvents, "..\\" + testName + "-base.csv");
-            saveGraph(testedEvents, "..\\" + testName + "-tested.csv");
+            saveGraph(baseEvents, "..\\..\\" + testName + "-base.csv");
+            saveGraph(testedEvents, "..\\..\\" + testName + "-tested.csv");
         }
 
         public double baseTime() {
@@ -82,7 +83,7 @@ public class MarginTests {
 
         test.saveGraphs(info);
         var expected = test.baseTime() * (1 + value / 100);
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     /** Test the linear allowance */
@@ -98,7 +99,7 @@ public class MarginTests {
         var timesBase = getTimePerPosition(test.baseEvents);
         var schemaLength = timesBase.lastEntry().getKey() - timesBase.firstEntry().getKey();
         var expected = test.baseTime() + 60 * value * schemaLength / 100000;
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     /** Test the construction margin */
@@ -110,7 +111,7 @@ public class MarginTests {
 
         test.saveGraphs(info);
         var expected = test.baseTime() + value;
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     @ParameterizedTest
@@ -160,11 +161,11 @@ public class MarginTests {
 
         var expectedTotalTime = test.baseTime() + value;
 
-        assertEquals(expectedTotalTime, test.testedTime(), expectedTotalTime * tolerance);
+        assertEquals(expectedTotalTime, test.testedTime(), 5 * timeStep);
     }
 
     @ParameterizedTest
-    @ValueSource(doubles = {0.0, 30, 100})
+    @ValueSource(doubles = {0, 30, 100})
     public void testConstructionMarginsOnSegment(double value, TestInfo info) {
         testConstructionMarginsOnSegment(CONFIG_PATH, value, info);
     }
@@ -189,7 +190,7 @@ public class MarginTests {
                 test.baseTime() * (1. + linearAllowance.allowanceValue / 100.)
                         + constructionAllowance.allowanceValue
         );
-        assertEquals(expectedTime, test.testedTime(), expectedTime * 0.01);
+        assertEquals(expectedTime, test.testedTime(), 5 * timeStep);
     }
 
     @Test
@@ -216,7 +217,7 @@ public class MarginTests {
                 (test.baseTime() + constructionAllowance.allowanceValue)
                         * (1 + marecoAllowance.allowanceValue / 100)
         );
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     @Test
@@ -235,7 +236,7 @@ public class MarginTests {
         test.saveGraphs(info);
 
         var expected = test.baseTime() * (1 + value / 100);
-        assertEquals(expected, test.testedTime(), 6);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     @ParameterizedTest
@@ -257,7 +258,7 @@ public class MarginTests {
         var timesBase = getTimePerPosition(test.baseEvents);
         var schemaLength = timesBase.lastEntry().getKey() - timesBase.firstEntry().getKey();
         var expected = test.baseTime() + 60 * value * schemaLength / 100000;
-        assertEquals(expected, test.testedTime(), 6);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     @ParameterizedTest
@@ -329,7 +330,7 @@ public class MarginTests {
         test.saveGraphs(info);
 
         var expected = test.baseTime() * (1 + margin / 100);
-        assertEquals(expected, test.testedTime(), 5 + 0.0015 * expected);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
 
         var coastingSpeedControllers =
                 findCoastingSpeedControllers(
@@ -338,7 +339,8 @@ public class MarginTests {
         for (var controller : coastingSpeedControllers) {
             assertLowerSpeedPerPositionBetween(
                     test.baseEvents, test.testedEvents,
-                    controller.beginPosition, controller.endPosition
+                    controller.beginPosition, controller.endPosition,
+                    0.2 * timeStep
             );
         }
     }
@@ -356,7 +358,7 @@ public class MarginTests {
         test.saveGraphs(info);
 
         var expected = test.baseTime() * (1 + value / 100);
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     /** Test the linear allowance type DISTANCE */
@@ -376,7 +378,7 @@ public class MarginTests {
         var expectedExtraTime = value * distance * 60 / 100000;
         var expected = test.baseTime() + expectedExtraTime;
 
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     @Test
@@ -420,7 +422,7 @@ public class MarginTests {
 
         var expected = marginChangeTime * (1 + startMargin.allowanceValue / 100)
                 + (test.baseTime() - marginChangeTime) * (1 + endMargin.allowanceValue / 100);
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     /** Test stacking multiple construction margins */
@@ -439,7 +441,7 @@ public class MarginTests {
 
         var expected = test.baseTime() + startMargin.allowanceValue + endMargin.allowanceValue;
 
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 
     @Test
@@ -500,6 +502,6 @@ public class MarginTests {
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(marecoAllowance));
 
         var expected = test.baseTime() * (1 + value / 100);
-        assertEquals(expected, test.testedTime(), 6);
+        assertEquals(expected, test.testedTime(), 5 * timeStep);
     }
 }
