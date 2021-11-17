@@ -50,7 +50,7 @@ public final class LimitAnnounceSpeedController extends StopSpeedController {
         );
     }
 
-    /** Create LimitannouceSpeedController from initial speed and target position */
+    /** Create LimitAnnounceSpeedController from initial speed and target position */
     public static LimitAnnounceSpeedController create(
             double initialSpeed,
             double targetSpeed,
@@ -68,22 +68,6 @@ public final class LimitAnnounceSpeedController extends StopSpeedController {
         );
     }
 
-    /** Create LimitannouceSpeedController from initial speed and initial position */
-    public static LimitAnnounceSpeedController createFromInitialPosition(
-            double initialSpeed,
-            double targetSpeed,
-            double initialPosition,
-            double gamma
-    ) {
-        var requiredBrakingDistance = (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / 2 * gamma;
-        return new LimitAnnounceSpeedController(
-                targetSpeed,
-                initialPosition,
-                initialPosition + requiredBrakingDistance,
-                gamma
-        );
-    }
-
     @Override
     public SpeedDirective getDirective(
             double pathPosition
@@ -91,7 +75,7 @@ public final class LimitAnnounceSpeedController extends StopSpeedController {
         var distance = endPosition - pathPosition;
         assert distance >= 0;
         var currentLimit = Math.sqrt(targetSpeedLimit * targetSpeedLimit + 2 * distance * gamma);
-        return new SpeedDirective(currentLimit);
+        return SpeedDirective.getBrakingDirective(currentLimit);
     }
 
     @Override

@@ -6,11 +6,13 @@ import java.util.Objects;
 public final class SpeedDirective {
     public double allowedSpeed;
     public boolean isCoasting;
+    public boolean isBraking;
 
     /** Creates a new speed directive */
     public SpeedDirective(double allowedSpeed) {
         this.allowedSpeed = allowedSpeed;
         this.isCoasting = false;
+        this.isBraking = false;
     }
 
     public static SpeedDirective getMax() {
@@ -18,9 +20,16 @@ public final class SpeedDirective {
     }
 
     /** Creates a speed directive indicating coasting over its range */
-    public static SpeedDirective getCoastingController() {
-        var directive = new SpeedDirective(Double.POSITIVE_INFINITY);
+    public static SpeedDirective getCoastingDirective() {
+        var directive = new SpeedDirective(Double.NaN);
         directive.isCoasting = true;
+        return directive;
+    }
+
+    /** Creates a speed directive indicating braking over its range */
+    public static SpeedDirective getBrakingDirective(double speed) {
+        var directive = new SpeedDirective(speed);
+        directive.isBraking = true;
         return directive;
     }
 
@@ -31,8 +40,11 @@ public final class SpeedDirective {
     public void mergeWith(SpeedDirective directive) {
         if (directive.isCoasting)
             isCoasting = true;
-        else if (directive.allowedSpeed < allowedSpeed)
+        //TODO : correct this
+        else if (directive.allowedSpeed < allowedSpeed) {
             allowedSpeed = directive.allowedSpeed;
+            isBraking = directive.isBraking;
+        }
     }
 
     @Override

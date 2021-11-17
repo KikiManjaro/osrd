@@ -69,10 +69,10 @@ public class TrainPhysicsIntegrator {
 
         double actionTractionForce = action.tractionForce();
         double actionBrakingForce = action.brakingForce();
-        assert actionBrakingForce >= 0.;
+        assert actionBrakingForce <= 0.;
 
         // the sum of forces that always go the direction opposite to the train's movement
-        double oppositeForce = rollingResistance + actionBrakingForce;
+        double oppositeForce = rollingResistance + abs(actionBrakingForce);
 
         // as the oppositeForces is a reaction force, it needs to be adjusted to be opposed to the other forces
         double effectiveOppositeForces;
@@ -126,11 +126,24 @@ public class TrainPhysicsIntegrator {
         // a<0 dec force<0
         // a>0 acc force>0
 
-        // if the train is supposed to coast, make sure there's not a more restraining speedController active
+        // if the train is supposed to coast, make sure there is not a most constraining speed directive
         if (speedDirective.isCoasting && currentSpeed <= speedDirective.allowedSpeed && currentSpeed != 0) {
             return Action.coast();
         }
 
+        // if the train is supposed to brake, brake
+        if (speedDirective.isBraking) {
+            return Action.brake(getBrakingForce(rollingStock));
+        }
+
+
+        // if the speed is lower the directive, accelerate
+        if (currentSpeed < speedDirective.allowedSpeed) {
+            return Action.accelerate(rollingStock.getMaxEffort(currentSpeed));
+        }
+
+        return Action.maintain(- weightForce + rollingResistance);
+        /**
         // the total force the train needs to reach target speed
         var targetForce = directionSign * (speedDirective.allowedSpeed - currentSpeed) / timeStep * inertia;
         // limited the possible acceleration for reasons of travel comfort
@@ -157,6 +170,7 @@ public class TrainPhysicsIntegrator {
                 actionForce -= rollingResistance + weightForce;
         }
         return Action.brake(Math.abs(actionForce));
+         */
     }
 
     private static double computePositionDelta(double currentSpeed, double acceleration,

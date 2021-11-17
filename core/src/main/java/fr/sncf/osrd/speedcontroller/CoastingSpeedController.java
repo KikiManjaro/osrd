@@ -13,7 +13,7 @@ public class CoastingSpeedController extends SpeedController {
 
     @Override
     public SpeedDirective getDirective(double pathPosition) {
-        return SpeedDirective.getCoastingController();
+        return SpeedDirective.getCoastingDirective();
     }
 
     @Override
