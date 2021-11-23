@@ -27,7 +27,10 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
@@ -78,26 +81,79 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                 });
     }
 
+    private File getLogDirectory() {
+        var root = new File("requests_log");
+        if (!root.exists()) {
+            var rootCreated = root.mkdir();
+            assert rootCreated;
+        }
+        var now = LocalDateTime.now();
+        var path = new File(String.format("%s/%s_%s", root, now, new Random().nextLong()));
+        assert !path.exists();
+        var ok = path.mkdir();
+        assert ok;
+        return path.getAbsoluteFile();
+    }
+
+    private static void saveRequest(File logDirectory, PathfindingEndpoint.PathfindingRequest request)
+            throws IOException {
+        var path = logDirectory.getPath() + "/request.json";
+        var json = adapterRequest.toJson(request);
+        FileWriter fw = new FileWriter(path);
+        fw.write(json);
+        fw.close();
+    }
+
+    private static void saveResponse(File logDirectory, Response response, double time)
+            throws IOException {
+        var path = logDirectory.getPath() + "/response.txt";
+        FileWriter fw = new FileWriter(path);
+        fw.write(String.format("time: %fs%n", time));
+        fw.write(String.format("response: %s%n", response));
+        if (response instanceof RsJson) {
+            var json = (RsJson) response;
+            fw.write(String.format("response head:%n"));
+            for (var str : json.head())
+                fw.write(String.format("%s%n", str));
+            fw.write(String.format("response body:%n"));
+            fw.write(String.format("%s%n", new String(response.body().readAllBytes())));
+        }
+        fw.close();
+    }
+
     @Override
+    public Response act(Request req) throws IOException {
+        var logDirectory = getLogDirectory();
+        var body = new RqPrint(req).printBody();
+        var request = adapterRequest.fromJson(body);
+        if (request == null)
+            return new RsWithStatus(new RsText("missing request body"), 400);
+
+        saveRequest(logDirectory, request);
+
+        // load infra
+        Infra infra;
+        try {
+            infra = infraManager.load(request.infra);
+        } catch (InfraLoadException | InterruptedException e) {
+            return new RsWithStatus(new RsText(
+                    String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
+        }
+        var begin = System.nanoTime();
+        var response = runPathfinding(infra, request);
+        double time = (System.nanoTime() - begin);
+        var timeSeconds = time / 1e9;
+        saveResponse(logDirectory, response, timeSeconds);
+
+        return response;
+    }
+
+    /** Runs a pathfinding request */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    public Response act(Request req) throws IOException {
+    public Response runPathfinding(Infra infra, PathfindingRequest request) {
         try {
-            var body = new RqPrint(req).printBody();
-            var request = adapterRequest.fromJson(body);
-            if (request == null)
-                return new RsWithStatus(new RsText("missing request body"), 400);
-
             var reqWaypoints = request.waypoints;
-
-            // load infra
-            Infra infra;
-            try {
-                infra = infraManager.load(request.infra);
-            } catch (InfraLoadException | InterruptedException e) {
-                return new RsWithStatus(new RsText(
-                        String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
-            }
 
             // parse the waypoints
             var waypoints = (ArrayList<RouteLocation>[]) new ArrayList[reqWaypoints.length];
