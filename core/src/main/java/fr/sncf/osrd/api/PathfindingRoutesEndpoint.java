@@ -5,11 +5,14 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
+import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -18,6 +21,7 @@ import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.BasicPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
+import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.takes.Request;
@@ -30,6 +34,7 @@ import org.takes.rs.RsWithStatus;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -47,11 +52,11 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         super(infraHandler);
     }
 
-    private int tryFindPath(Infra infra,
-                            PriorityQueue<BasicPathNode<Route>> candidatePaths,
-                            DistCostFunction<Route> costFunction, ArrayList<RouteLocation> destinationWaypoints,
-                            boolean isLastStep,
-                            ArrayList<BasicPathNode<Route>> pathsToStep) {
+    private static int tryFindPath(Infra infra,
+                                   PriorityQueue<BasicPathNode<Route>> candidatePaths,
+                                   DistCostFunction<Route> costFunction, ArrayList<RouteLocation> destinationWaypoints,
+                                   boolean isLastStep,
+                                   ArrayList<BasicPathNode<Route>> pathsToStep) {
         return Dijkstra.findPaths(
                 infra.routeGraph,
                 candidatePaths,
@@ -148,10 +153,24 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         return response;
     }
 
+    public static void main(String[] args) {
+        try {
+            var infra = Infra.parseFromFile(JsonConfig.InfraType.RAILJSON, "test_bretagne/infra.json");
+            var fileSource = Okio.source(Path.of("test_bretagne/request.json"));
+            var bufferedSource = Okio.buffer(fileSource);
+            var request = adapterRequest.fromJson(bufferedSource);
+            assert request != null;
+            var res = runPathfinding(infra, request);
+            System.out.println(res);
+        } catch (InvalidInfraException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /** Runs a pathfinding request */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    public Response runPathfinding(Infra infra, PathfindingRequest request) {
+    public static Response runPathfinding(Infra infra, PathfindingRequest request) {
         try {
             var reqWaypoints = request.waypoints;
 
@@ -188,6 +207,15 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     );
                 }
                 waypoints[i] = stopWaypoints;
+            }
+
+            for (var point : waypoints[0]) {
+                var route = point.route;
+                System.out.println(route.id);
+                for (var path : route.tvdSectionsPaths)
+                    for (var track : path.trackSections)
+                        System.out.printf("\t%s %s%n", track.edge, track.direction);
+                System.out.flush();
             }
 
             var costFunction = new DistCostFunction<Route>();
@@ -283,7 +311,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
      *  one path). Then we take paths following the chain.
      */
     @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY", justification = "No operation is done after the copy")
-    private ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> filterPathSteps(
+    private static ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> filterPathSteps(
             ArrayList<ArrayList<BasicPathNode<Route>>> pathsToGoal
     ) {
         var res = new ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>>();
@@ -308,7 +336,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private RouteLocation pathNodeToRouteLocation(BasicPathNode<Route> node) {
+    private static RouteLocation pathNodeToRouteLocation(BasicPathNode<Route> node) {
         return new RouteLocation(node.edge, node.position);
     }
 
