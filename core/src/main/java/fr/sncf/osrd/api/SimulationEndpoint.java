@@ -4,6 +4,8 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.config.JsonConfig;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.StopActionPoint.RestartTrainEvent.RestartTrainPlanned;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
@@ -32,6 +34,7 @@ import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.utils.CurveSimplification;
+import okio.Okio;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -40,7 +43,12 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class SimulationEndpoint implements Take {
@@ -64,29 +72,10 @@ public class SimulationEndpoint implements Take {
         this.infraManager = infraManager;
     }
 
-    @Override
-    public Response act(Request req) throws
-            IOException,
-            InvalidRollingStock,
-            InvalidSchedule,
-            InvalidSuccession,
-            SimulationError {
+    public static Response runSimulation(Infra infra, SimulationRequest request)
+            throws InvalidRollingStock, InvalidSuccession, InvalidSchedule, SimulationError {
+
         try {
-            // Parse request input
-            var body = new RqPrint(req).printBody();
-            var request = adapterRequest.fromJson(body);
-            if (request == null)
-                return new RsWithStatus(new RsText("missing request body"), 400);
-
-            // load infra
-            Infra infra;
-            try {
-                infra = infraManager.load(request.infra);
-            } catch (InfraLoadException | InterruptedException e) {
-                return new RsWithStatus(new RsText(
-                        String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
-            }
-
             // load train schedules
             var rjsSimulation = new RJSSimulation(request.rollingStocks, request.trainSchedules,
                     request.trainSuccessionTables);
@@ -119,6 +108,92 @@ public class SimulationEndpoint implements Take {
             ex.printStackTrace(System.err);
             throw ex;
         }
+    }
+
+    private File getLogDirectory() {
+        var root = new File("requests_log_schedule");
+        if (!root.exists()) {
+            var rootCreated = root.mkdir();
+            assert rootCreated;
+        }
+        var now = LocalDateTime.now();
+        var path = new File(String.format("%s/%s_%s", root, now, new Random().nextLong()));
+        assert !path.exists();
+        var ok = path.mkdir();
+        assert ok;
+        return path.getAbsoluteFile();
+    }
+
+    private static void saveRequest(File logDirectory, SimulationRequest request)
+            throws IOException {
+        var path = logDirectory.getPath() + "/request.json";
+        var json = adapterRequest.toJson(request);
+        FileWriter fw = new FileWriter(path);
+        fw.write(json);
+        fw.close();
+    }
+
+    private static void saveResponse(File logDirectory, Response response, double time)
+            throws IOException {
+        var path = logDirectory.getPath() + "/response.txt";
+        FileWriter fw = new FileWriter(path);
+        fw.write(String.format("time: %fs%n", time));
+        fw.write(String.format("response: %s%n", response));
+        if (response instanceof RsJson) {
+            var json = (RsJson) response;
+            fw.write(String.format("response head:%n"));
+            for (var str : json.head())
+                fw.write(String.format("%s%n", str));
+            fw.write(String.format("response body:%n"));
+            fw.write(String.format("%s%n", new String(response.body().readAllBytes())));
+        }
+        fw.close();
+    }
+
+    public static void main(String[] args) {
+        try {
+            var infra = Infra.parseFromFile(JsonConfig.InfraType.RAILJSON, "test_bretagne/infra.json");
+            var fileSource = Okio.source(Path.of("test_bretagne/request.json"));
+            var bufferedSource = Okio.buffer(fileSource);
+            var request = adapterRequest.fromJson(bufferedSource);
+            assert request != null;
+            var res = runSimulation(infra, request);
+            System.out.println(res);
+        } catch (InvalidInfraException | IOException | InvalidRollingStock |
+                InvalidSuccession | InvalidSchedule | SimulationError e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Response act(Request req) throws
+            IOException,
+            InvalidRollingStock,
+            InvalidSchedule,
+            InvalidSuccession,
+            SimulationError {
+        // Parse request input
+        var body = new RqPrint(req).printBody();
+        var request = adapterRequest.fromJson(body);
+        if (request == null)
+            return new RsWithStatus(new RsText("missing request body"), 400);
+
+        // load infra
+        Infra infra;
+        try {
+            infra = infraManager.load(request.infra);
+        } catch (InfraLoadException | InterruptedException e) {
+            return new RsWithStatus(new RsText(
+                    String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
+        }
+        var dir = getLogDirectory();
+        saveRequest(dir, request);
+        var begin = System.nanoTime();
+        var res = runSimulation(infra, request);
+        double time = (System.nanoTime() - begin);
+        var timeSeconds = time / 1e9;
+        saveResponse(dir, res, timeSeconds);
+        return res;
     }
 
 
