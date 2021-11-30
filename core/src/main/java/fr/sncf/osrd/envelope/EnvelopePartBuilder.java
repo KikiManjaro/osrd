@@ -6,11 +6,11 @@ public final class EnvelopePartBuilder {
     private final DoubleArrayList positions = new DoubleArrayList();
     private final DoubleArrayList speeds = new DoubleArrayList();
     private final EnvelopeType type;
-    private final boolean isCoasting;
+    private final EnvelopeAttitude attitude;
 
-    public EnvelopePartBuilder(EnvelopeType type, boolean isCoasting) {
+    public EnvelopePartBuilder(EnvelopeType type, EnvelopeAttitude attitude) {
         this.type = type;
-        this.isCoasting = isCoasting;
+        this.attitude = attitude;
     }
 
     public boolean isEmpty() {
@@ -31,6 +31,6 @@ public final class EnvelopePartBuilder {
     }
 
     public EnvelopePart build() {
-        return new EnvelopePart(type, positions.toArray(), speeds.toArray(), isCoasting);
+        return new EnvelopePart(type, attitude, positions.toArray(), speeds.toArray());
     }
 }

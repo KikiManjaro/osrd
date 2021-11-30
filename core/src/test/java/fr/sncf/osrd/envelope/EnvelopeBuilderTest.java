@@ -15,15 +15,15 @@ class EnvelopeBuilderTest {
          */
         var ep1 = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{0, 1, 2, 4, 8, 11, 12},
-                new double[]{0, 2, 3, 4, 4, 3, 0},
-                false
+                new double[]{0, 2, 3, 4, 4, 3, 0}
         );
         var ep2 = new EnvelopePart(
                 EnvelopeType.TRAIN_LIMIT,
+                EnvelopeAttitude.CONSTANT_SPEED,
                 new double[]{0, 12},
-                new double[]{3.5, 3.5},
-                false
+                new double[]{3.5, 3.5}
         );
 
         var builder = new EnvelopeBuilder();
@@ -50,15 +50,15 @@ class EnvelopeBuilderTest {
     void disjointEnvelopePartsSameOutput() {
         var ep1 = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{0, 1},
-                new double[]{3, 2},
-                false
+                new double[]{3, 2}
         );
         var ep2 = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{4, 6},
-                new double[]{0, 2},
-                false
+                new double[]{0, 2}
         );
 
         var builder = new EnvelopeBuilder();
@@ -83,15 +83,15 @@ class EnvelopeBuilderTest {
 
         var ep1 = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{0, 2},
-                new double[]{3, 0},
-                false
+                new double[]{3, 0}
         );
         var ep2 = new EnvelopePart(
                 EnvelopeType.TRAIN_LIMIT,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{0, 8},
-                new double[]{4, 4},
-                false
+                new double[]{4, 4}
         );
 
         var builder = new EnvelopeBuilder();
@@ -104,9 +104,9 @@ class EnvelopeBuilderTest {
 
         var part2Expected = new EnvelopePart(
                 EnvelopeType.TRAIN_LIMIT,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{2, 8},
-                new double[]{4, 4},
-                false
+                new double[]{4, 4}
         );
         assertEquals(part2Expected, envelope.parts.get(1));
     }
@@ -122,15 +122,15 @@ class EnvelopeBuilderTest {
 
         var ep1 = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{0, 1, 3},
-                new double[]{0, 1, 2},
-                false
+                new double[]{0, 1, 2}
         );
         var ep2 = new EnvelopePart(
                 EnvelopeType.TRAIN_LIMIT,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{0, 1, 3},
-                new double[]{1, 1, 1},
-                false
+                new double[]{1, 1, 1}
         );
 
         var builder = new EnvelopeBuilder();
@@ -156,15 +156,15 @@ class EnvelopeBuilderTest {
 
         var ep1 = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{1, 2.5},
-                new double[]{0.5, 2},
-                false
+                new double[]{0.5, 2}
         );
         var ep2 = new EnvelopePart(
                 EnvelopeType.TRAIN_LIMIT,
+                EnvelopeAttitude.UNKNOWN,
                 new double[]{0, 5},
-                new double[]{1, 1},
-                false
+                new double[]{1, 1}
         );
 
         var builder = new EnvelopeBuilder();
@@ -174,9 +174,24 @@ class EnvelopeBuilderTest {
 
         assertEquals(3, envelope.parts.size());
 
-        var exectedEp1 = new EnvelopePart(EnvelopeType.TRAIN_LIMIT, new double[]{0, 1}, new double[]{1, 1}, false);
-        var exectedEp2 = new EnvelopePart(EnvelopeType.ECO, new double[]{1, 1.5}, new double[]{0.5, 1}, false);
-        var exectedEp3 = new EnvelopePart(EnvelopeType.TRAIN_LIMIT, new double[]{1.5, 5}, new double[]{1, 1}, false);
+        var exectedEp1 = new EnvelopePart(
+                EnvelopeType.TRAIN_LIMIT,
+                EnvelopeAttitude.UNKNOWN,
+                new double[]{0, 1},
+                new double[]{1, 1}
+        );
+        var exectedEp2 = new EnvelopePart(
+                EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
+                new double[]{1, 1.5},
+                new double[]{0.5, 1}
+        );
+        var exectedEp3 = new EnvelopePart(
+                EnvelopeType.TRAIN_LIMIT,
+                EnvelopeAttitude.UNKNOWN,
+                new double[]{1.5, 5},
+                new double[]{1, 1}
+        );
         assertEquals(exectedEp1, envelope.parts.get(0));
         assertEquals(exectedEp2, envelope.parts.get(1));
         assertEquals(exectedEp3, envelope.parts.get(2));

@@ -9,9 +9,9 @@ class EnvelopePartTest {
     void interpolateSpeedTest() {
         var ep = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[] {1.5, 5},
-                new double[] {3, 4},
-                false
+                new double[] {3, 4}
         );
         var interpolatedSpeed = ep.interpolateSpeed(2.75);
         assertEquals(3.36, interpolatedSpeed, 0.01);
@@ -21,9 +21,9 @@ class EnvelopePartTest {
     void getPosIndex() {
         var ep = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[] {1.5, 3, 5},
-                new double[] {3, 4, 4},
-                false
+                new double[] {3, 4, 4}
         );
         assertEquals(0, ep.getPosIndex(1.5));
         assertEquals(0, ep.getPosIndex(3));
@@ -37,21 +37,21 @@ class EnvelopePartTest {
     void testEquals() {
         var ep1 = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[] {1.5, 3, 5},
-                new double[] {3, 4, 4},
-                false
+                new double[] {3, 4, 4}
         );
         var ep2 = new EnvelopePart(
                 EnvelopeType.ECO,
+                EnvelopeAttitude.UNKNOWN,
                 new double[] {1.5, 3, 5},
-                new double[] {3, 4, 4},
-                false
+                new double[] {3, 4, 4}
         );
         var ep3 = new EnvelopePart(
                 EnvelopeType.TRACK_LIMIT,
+                EnvelopeAttitude.UNKNOWN,
                 new double[] {1.5, 3, 5},
-                new double[] {3, 4, 4},
-                false
+                new double[] {3, 4, 4}
         );
         assertEquals(ep1, ep2);
         assertEquals(ep1.hashCode(), ep2.hashCode());

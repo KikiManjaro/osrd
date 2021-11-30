@@ -6,18 +6,19 @@ import java.util.Objects;
 
 public final class EnvelopePart {
     public final EnvelopeType type;
+    public final EnvelopeAttitude attitude;
+
     public final double[] positions;
     public final double[] speeds;
-    public final boolean isCoasting;
 
     /** Create an EnvelopePart */
-    public EnvelopePart(EnvelopeType type, double[] positions, double[] speeds, boolean isCoasting) {
+    public EnvelopePart(EnvelopeType type, EnvelopeAttitude attitude, double[] positions, double[] speeds) {
         assert positions.length == speeds.length;
         assert positions.length >= 2;
         this.type = type;
+        this.attitude = attitude;
         this.positions = positions;
         this.speeds = speeds;
-        this.isCoasting = isCoasting;
     }
 
     /** Given a position return the index of the interval contain this position */
@@ -60,13 +61,13 @@ public final class EnvelopePart {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EnvelopePart that = (EnvelopePart) o;
-        return isCoasting == that.isCoasting && type == that.type
+        return attitude == that.attitude && type == that.type
                 && Arrays.equals(positions, that.positions) && Arrays.equals(speeds, that.speeds);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(type, isCoasting);
+        int result = Objects.hash(type, attitude);
         result = 31 * result + Arrays.hashCode(positions);
         result = 31 * result + Arrays.hashCode(speeds);
         return result;

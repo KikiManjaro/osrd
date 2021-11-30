@@ -84,7 +84,7 @@ public final class EnvelopeBuilder {
 
     private void newResultPart(EnvelopePart newMinPart) {
         flushResultPart();
-        currentPartBuilder = new EnvelopePartBuilder(newMinPart.type, newMinPart.isCoasting);
+        currentPartBuilder = new EnvelopePartBuilder(newMinPart.type, newMinPart.attitude);
     }
 
     private void updateMinPoint(double position) {
