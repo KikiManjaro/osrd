@@ -20,9 +20,19 @@ public class ActivateRoute {
     ) throws SimulationError {
         var lastState = train.getLastState();
         var path = lastState.path;
+        // Compute distance to the next route
+        double distance = -lastState.location.getPathPosition();
+        for (var routeIndex = 0; routeIndex < lastState.routeIndex + 1; routeIndex++)
+            distance += path.routePath.get(routeIndex).length;
+
         for (var routeIndex = lastState.routeIndex + 1; routeIndex < path.routePath.size(); routeIndex++) {
             var route = path.routePath.get(routeIndex);
             var routeState = sim.infraState.getRouteState(route.index);
+            // Set max distance
+            if (distance > 4150)
+                break;
+            distance += route.length;
+
             if (!route.isControlled()) {
                 // passive route
                 if (routeState.status != RouteStatus.FREE) {
