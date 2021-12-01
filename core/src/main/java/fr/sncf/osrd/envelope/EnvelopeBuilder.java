@@ -84,7 +84,11 @@ public final class EnvelopeBuilder {
 
     private void newResultPart(EnvelopePart newMinPart) {
         flushResultPart();
-        currentPartBuilder = new EnvelopePartBuilder(newMinPart.type, newMinPart.attitude);
+        currentPartBuilder = new EnvelopePartBuilder(
+                newMinPart.source,
+                newMinPart.attitude,
+                newMinPart.physicallyAccurate
+        );
     }
 
     private void updateMinPoint(double position) {

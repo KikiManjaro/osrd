@@ -14,14 +14,14 @@ class EnvelopeBuilderTest {
          *    /             \
          */
         var ep1 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[]{0, 1, 2, 4, 8, 11, 12},
                 new double[]{0, 2, 3, 4, 4, 3, 0}
         );
         var ep2 = new EnvelopePart(
-                EnvelopeType.TRAIN_LIMIT,
-                EnvelopeAttitude.CONSTANT_SPEED,
+                EnvelopeSource.TRAIN_LIMIT,
+                null, false,
                 new double[]{0, 12},
                 new double[]{3.5, 3.5}
         );
@@ -32,15 +32,15 @@ class EnvelopeBuilderTest {
         var envelope = builder.build();
 
         assertEquals(3, envelope.parts.size());
-        assertEquals(EnvelopeType.ECO, envelope.parts.get(0).type);
+        assertEquals(EnvelopeSource.BRAKING, envelope.parts.get(0).source);
         assertEquals(4, envelope.parts.get(0).size());
         assertEquals(3, envelope.parts.get(0).positions[3], 0.0001);
         assertEquals(3.5, envelope.parts.get(0).speeds[3], 0.0001);
 
-        assertEquals(EnvelopeType.TRAIN_LIMIT, envelope.parts.get(1).type);
+        assertEquals(EnvelopeSource.TRAIN_LIMIT, envelope.parts.get(1).source);
         assertEquals(2, envelope.parts.get(1).size());
 
-        assertEquals(EnvelopeType.ECO, envelope.parts.get(2).type);
+        assertEquals(EnvelopeSource.BRAKING, envelope.parts.get(2).source);
         assertEquals(3, envelope.parts.get(2).size());
         assertEquals(9.5, envelope.parts.get(2).positions[0], 0.0001);
         assertEquals(3.5, envelope.parts.get(2).speeds[0], 0.0001);
@@ -49,14 +49,14 @@ class EnvelopeBuilderTest {
     @Test
     void disjointEnvelopePartsSameOutput() {
         var ep1 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[]{0, 1},
                 new double[]{3, 2}
         );
         var ep2 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[]{4, 6},
                 new double[]{0, 2}
         );
@@ -82,14 +82,14 @@ class EnvelopeBuilderTest {
          */
 
         var ep1 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[]{0, 2},
                 new double[]{3, 0}
         );
         var ep2 = new EnvelopePart(
-                EnvelopeType.TRAIN_LIMIT,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.TRAIN_LIMIT,
+                null, false,
                 new double[]{0, 8},
                 new double[]{4, 4}
         );
@@ -103,8 +103,8 @@ class EnvelopeBuilderTest {
         assertEquals(ep1, envelope.parts.get(0));
 
         var part2Expected = new EnvelopePart(
-                EnvelopeType.TRAIN_LIMIT,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.TRAIN_LIMIT,
+                null, false,
                 new double[]{2, 8},
                 new double[]{4, 4}
         );
@@ -121,14 +121,14 @@ class EnvelopeBuilderTest {
          */
 
         var ep1 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[]{0, 1, 3},
                 new double[]{0, 1, 2}
         );
         var ep2 = new EnvelopePart(
-                EnvelopeType.TRAIN_LIMIT,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.TRAIN_LIMIT,
+                null, false,
                 new double[]{0, 1, 3},
                 new double[]{1, 1, 1}
         );
@@ -139,10 +139,10 @@ class EnvelopeBuilderTest {
         var envelope = builder.build();
 
         assertEquals(2, envelope.parts.size());
-        assertEquals(EnvelopeType.ECO, envelope.parts.get(0).type);
+        assertEquals(EnvelopeSource.BRAKING, envelope.parts.get(0).source);
         assertEquals(2, envelope.parts.get(0).size());
 
-        assertEquals(EnvelopeType.TRAIN_LIMIT, envelope.parts.get(1).type);
+        assertEquals(EnvelopeSource.TRAIN_LIMIT, envelope.parts.get(1).source);
         assertEquals(2, envelope.parts.get(1).size());
     }
 
@@ -155,14 +155,14 @@ class EnvelopeBuilderTest {
          */
 
         var ep1 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[]{1, 2.5},
                 new double[]{0.5, 2}
         );
         var ep2 = new EnvelopePart(
-                EnvelopeType.TRAIN_LIMIT,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.TRAIN_LIMIT,
+                null, false,
                 new double[]{0, 5},
                 new double[]{1, 1}
         );
@@ -175,20 +175,20 @@ class EnvelopeBuilderTest {
         assertEquals(3, envelope.parts.size());
 
         var exectedEp1 = new EnvelopePart(
-                EnvelopeType.TRAIN_LIMIT,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.TRAIN_LIMIT,
+                null, false,
                 new double[]{0, 1},
                 new double[]{1, 1}
         );
         var exectedEp2 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[]{1, 1.5},
                 new double[]{0.5, 1}
         );
         var exectedEp3 = new EnvelopePart(
-                EnvelopeType.TRAIN_LIMIT,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.TRAIN_LIMIT,
+                null, false,
                 new double[]{1.5, 5},
                 new double[]{1, 1}
         );

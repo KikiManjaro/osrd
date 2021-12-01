@@ -8,8 +8,8 @@ class EnvelopePartTest {
     @Test
     void interpolateSpeedTest() {
         var ep = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[] {1.5, 5},
                 new double[] {3, 4}
         );
@@ -20,8 +20,8 @@ class EnvelopePartTest {
     @Test
     void getPosIndex() {
         var ep = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
@@ -36,20 +36,20 @@ class EnvelopePartTest {
     @Test
     void testEquals() {
         var ep1 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep2 = new EnvelopePart(
-                EnvelopeType.ECO,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.BRAKING,
+                null, false,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep3 = new EnvelopePart(
-                EnvelopeType.TRACK_LIMIT,
-                EnvelopeAttitude.UNKNOWN,
+                EnvelopeSource.TRACK_LIMIT,
+                null, false,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
