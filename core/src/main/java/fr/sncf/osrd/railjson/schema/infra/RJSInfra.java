@@ -8,7 +8,10 @@ import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspectConstraint;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,12 +24,11 @@ public class RJSInfra {
             .Builder()
             .add(ID.Adapter.FACTORY)
             .add(RJSRSExpr.adapter)
-            .add(RJSRouteWaypoint.adapter)
             .add(RJSAspectConstraint.adapter)
             .build()
             .adapter(RJSInfra.class);
 
-    public static final transient String CURRENT_VERSION = "1.0";
+    public static final transient String CURRENT_VERSION = "2.0.0";
 
     /** The version of the infra format used */
     public String version;
@@ -58,14 +60,6 @@ public class RJSInfra {
     /** The list of routes */
     public Collection<RJSRoute> routes;
 
-    /** The list of speed sections */
-    @Json(name = "speed_sections")
-    public Collection<RJSSpeedSection> speedSections;
-
-    /** The list of catenary sections */
-    @Json(name = "catenary_types")
-    public Collection<RJSCatenaryType> catenaryTypes;
-
     /** The list of all the aspects signals can take */
     public Collection<RJSAspect> aspects;
 
@@ -77,6 +71,13 @@ public class RJSInfra {
     @Json(name = "switch_types")
     public Map<String, RJSSwitchType> switchTypes;
 
+    public List<RJSSignal> signals;
+
+    @Json(name = "buffer_stops")
+    public List<RJSBufferStop> bufferStops;
+
+    public List<RJSTrainDetector> detectors;
+
     /** Create a new serialized RailJSON file */
     public RJSInfra(
             Collection<RJSTrackSection> trackSections,
@@ -85,11 +86,13 @@ public class RJSInfra {
             Collection<RJSOperationalPoint> operationalPoints,
             Collection<RJSTVDSection> tvdSections,
             Collection<RJSRoute> routes,
-            Collection<RJSSpeedSection> speedSections,
-            Collection<RJSCatenaryType> catenaryTypes,
             Collection<RJSAspect> aspects,
             List<RJSRSFunction> signalFunctions,
-            Map<String, RJSSwitchType> switchTypes
+            Map<String, RJSSwitchType> switchTypes,
+            List<RJSSignal> signals,
+            List<RJSBufferStop> bufferStops,
+            List<RJSTrainDetector> detectors
+
     ) {
         this.trackSections = trackSections;
         this.trackSectionLinks = trackSectionLinks;
@@ -97,11 +100,12 @@ public class RJSInfra {
         this.operationalPoints = operationalPoints;
         this.tvdSections = tvdSections;
         this.routes = routes;
-        this.speedSections = speedSections;
-        this.catenaryTypes = catenaryTypes;
         this.aspects = aspects;
         this.scriptFunctions = signalFunctions;
         this.switchTypes = switchTypes;
+        this.signals = signals;
+        this.bufferStops = bufferStops;
+        this.detectors = detectors;
     }
 
     /**
@@ -117,9 +121,10 @@ public class RJSInfra {
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
+                new HashMap<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
-                new HashMap<>()
+                new ArrayList<>()
         );
     }
 }
