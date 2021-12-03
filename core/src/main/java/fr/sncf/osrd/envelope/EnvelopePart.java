@@ -95,9 +95,10 @@ public final class EnvelopePart {
         var lastSpeed = speeds[i];
         var nextSpeed = speeds[i + 1];
 
-        var delta = nextPos - lastPos;
-        var offset = position - lastPos;
-        return lastSpeed + (nextSpeed - lastSpeed) * offset / delta;
+        var positionDelta = nextPos - lastPos;
+        var acceleration = (nextSpeed * nextSpeed - lastSpeed * lastSpeed) / 2 / positionDelta;
+
+        return lastSpeed * lastSpeed + 2 * acceleration * (position - lastPos);
     }
 
     public double getBegin() {
