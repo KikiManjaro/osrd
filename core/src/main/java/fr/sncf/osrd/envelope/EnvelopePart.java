@@ -101,6 +101,20 @@ public final class EnvelopePart {
         return lastSpeed * lastSpeed + 2 * acceleration * (position - lastPos);
     }
 
+    /** Given a position return the interpolated deltaTime */
+    public double interpolateTime(double position) {
+        var i = getPosIndex(position);
+        var lastPos = positions[i];
+        var nextPos = positions[i + 1];
+        var lastSpeed = speeds[i];
+        var nextSpeed = speeds[i + 1];
+
+        var positionDelta = nextPos - lastPos;
+        var acceleration = (nextSpeed * nextSpeed - lastSpeed * lastSpeed) / 2 / positionDelta;
+        var interpolatedSpeed = lastSpeed * lastSpeed + 2 * acceleration * (position - lastPos);
+        return (interpolatedSpeed - lastSpeed) / acceleration;
+    }
+
     public double getBegin() {
         return positions[0];
     }
