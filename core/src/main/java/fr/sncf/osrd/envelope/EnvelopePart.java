@@ -56,14 +56,17 @@ public final class EnvelopePart {
         this(source, attitude, physicallyAccurate, positions, speeds, null);
     }
 
+    /** Compute the time deltas between positions */
     private static double[] computeTimes(double[] positions, double[] speeds) {
-        var times = new double[positions.length - 1];
+        var timeDeltas = new double[positions.length - 1];
         for (int i = 0; i < positions.length - 1; i++) {
+            double speedDelta = speeds[i + 1] - speeds[i];
             double positionDelta = positions[i + 1] - positions[i];
-            double averageSpeed = (speeds[i] + speeds[i + 1]) / 2;
-            times[i] = positionDelta / averageSpeed;
+            double acceleration = (speeds[i + 1] * speeds[i + 1] - speeds[i] * speeds[i])
+                    / 2 / positionDelta;
+            timeDeltas[i] = speedDelta / acceleration;
         }
-        return times;
+        return timeDeltas;
     }
 
     /** Returns the time deltas between positions */

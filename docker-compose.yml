@@ -118,6 +118,10 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost"]
       start_period: 4s
       interval: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 12G
 
   wait-healthy:
     depends_on:
