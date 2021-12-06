@@ -18,7 +18,7 @@ class Waypoint:
     def make_rjs_ref(self):
         return schemas.ObjectReference(
             id=self.label,
-            type="Waypoint"
+            type="waypoint"
         )
 
     def to_rjs(self, track_reference):

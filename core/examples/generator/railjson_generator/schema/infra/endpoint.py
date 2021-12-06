@@ -44,6 +44,6 @@ class TrackEndpoint:
             endpoint=schemas.Endpoint[self.endpoint.name],
             track=schemas.ObjectReference(
                 id=self.track_section.label,
-                type="TrackSection"
+                type="track_section"
             )
         )

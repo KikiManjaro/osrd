@@ -28,7 +28,7 @@ class Switch:
     def to_rjs(self):
         return schemas.Switch(
             id=self.label,
-            switch_type=schemas.ObjectReference(id="classic_switch", type="SwitchType"),
+            switch_type=schemas.ObjectReference(id="classic_switch", type="switch_type"),
             group_change_delay=self.delay,
             ports={port: getattr(self, port).to_rjs() for port in ("base", "left", "right")},
             **placeholder_geo_points()

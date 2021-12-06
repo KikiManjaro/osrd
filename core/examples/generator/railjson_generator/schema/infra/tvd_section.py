@@ -30,12 +30,12 @@ class TVDSection:
     def to_rjs(self):
         return schemas.TVDSection(
             id=self.label,
-            detectors=[schemas.ObjectReference(type="Detector", id=detector.label) for detector in self.detectors],
-            buffer_stops=[schemas.ObjectReference(type="BufferStop", id=bs.label) for bs in self.buffer_stops],
+            detectors=[schemas.ObjectReference(type="detector", id=detector.label) for detector in self.detectors],
+            buffer_stops=[schemas.ObjectReference(type="buffer_stop", id=bs.label) for bs in self.buffer_stops],
         )
 
     def make_rjs_ref(self):
         return schemas.ObjectReference(
             id=self.label,
-            type="TVDSection"
+            type="tvd_section"
         )
