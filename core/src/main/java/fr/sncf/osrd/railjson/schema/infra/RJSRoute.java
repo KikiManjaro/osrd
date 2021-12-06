@@ -4,7 +4,7 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.ObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.DirectionalRJSTrackRange;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.SingleDirectionalRJSTrackRange;
 
 import java.util.List;
 import java.util.Set;
@@ -13,7 +13,7 @@ public class RJSRoute implements Identified {
     public String id;
 
     /** List of the track ranges on the route */
-    public List<DirectionalRJSTrackRange> path;
+    public List<SingleDirectionalRJSTrackRange> path;
 
     @Json(name = "release_groups")
     public List<Set<ObjectRef<RJSTVDSection>>> releaseGroups;
@@ -29,7 +29,7 @@ public class RJSRoute implements Identified {
     /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,
-            List<DirectionalRJSTrackRange> path,
+            List<SingleDirectionalRJSTrackRange> path,
             List<Set<ObjectRef<RJSTVDSection>>> releaseGroups,
             ObjectRef<RJSRouteWaypoint> entryPoint,
             ObjectRef<RJSRouteWaypoint> exitPoint
