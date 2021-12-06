@@ -53,5 +53,6 @@ class SpeedSection(RangeElement):
         return schemas.SpeedSection(
             speed=self.max_speed,
             begin=self.begin,
-            end=self.end
+            end=self.end,
+            applicable_directions=schemas.ApplicableDirections.BOTH
         )

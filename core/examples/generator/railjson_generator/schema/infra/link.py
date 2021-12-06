@@ -5,11 +5,20 @@ from railjson_generator.schema.infra.direction import ApplicableDirection
 from railjson_generator.schema.infra.endpoint import TrackEndpoint
 
 
+def _link_id():
+    res = f"link.{Link._INDEX}"
+    Link._INDEX += 1
+    return res
+
+
 @dataclass
 class Link:
     begin: TrackEndpoint
     end: TrackEndpoint
     navigability: ApplicableDirection = field(default=ApplicableDirection.BOTH)
+    label: str = field(default_factory=_link_id)
+
+    _INDEX = 0
 
     def get_key(self):
         return Link.format_link_key(self.begin, self.end)
@@ -26,7 +35,8 @@ class Link:
 
     def to_rjs(self):
         return schemas.TrackSectionLink(
-            begin=self.begin.to_rjs(),
-            end=self.end.to_rjs(),
+            id=self.label,
+            src=self.begin.to_rjs(),
+            dst=self.end.to_rjs(),
             navigability=schemas.ApplicableDirections[self.navigability.name]
         )

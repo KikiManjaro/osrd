@@ -1,7 +1,6 @@
 import schemas
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Dict
 
 from railjson_generator.rjs_static import SIGNAL_EXPR
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
@@ -28,6 +27,10 @@ class Signal:
     def to_rjs(self, track_reference):
         expr = deepcopy(SIGNAL_EXPR)
         expr["arguments"][0]["signal"] = self.label
+        if self.direction == ApplicableDirection.NORMAL:
+            self.direction = Direction.START_TO_STOP
+        elif self.direction == ApplicableDirection.REVERSE:
+            self.direction = Direction.STOP_TO_START
         return schemas.Signal(
             id=self.label,
             direction=schemas.Direction[self.direction.name],
