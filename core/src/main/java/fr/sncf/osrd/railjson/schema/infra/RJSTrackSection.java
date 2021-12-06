@@ -3,6 +3,7 @@ package fr.sncf.osrd.railjson.schema.infra;
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCurve;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenarySection;
@@ -78,11 +79,11 @@ public class RJSTrackSection implements Identified {
     }
 
     public RJSTrackEndpoint beginEndpoint() {
-        return new RJSTrackEndpoint(ID.from(this), EdgeEndpoint.BEGIN);
+        return new RJSTrackEndpoint(new ObjectRef<>(ID.from(this), "track_section"), EdgeEndpoint.BEGIN);
     }
 
     public RJSTrackEndpoint endEndpoint() {
-        return new RJSTrackEndpoint(ID.from(this), EdgeEndpoint.END);
+        return new RJSTrackEndpoint(new ObjectRef<>(ID.from(this), "track_section"), EdgeEndpoint.END);
     }
 
 }

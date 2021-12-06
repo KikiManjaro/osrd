@@ -24,7 +24,7 @@ public class RJSSignal extends RJSTrackObject implements Identified {
 
     /** Detector linked with the signal, may be empty if the signal doesn't protect a route */
     @Json(name = "linked_detector")
-    public ID<RJSTrainDetector> linkedDetector = new ID<>("");
+    public ObjectRef<RJSTrainDetector> linkedDetector;
 
     public double angle;
 

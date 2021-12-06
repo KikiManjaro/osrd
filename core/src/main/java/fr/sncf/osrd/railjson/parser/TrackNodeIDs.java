@@ -49,11 +49,11 @@ public class TrackNodeIDs {
         for (var link : links) {
             int groupA = endpointIDs.getOrDefault(link.src, -1);
             if (groupA == -1)
-                throw new InvalidInfraException(String.format("unknown track section: %s", link.src.section.id));
+                throw new InvalidInfraException(String.format("unknown track section: %s", link.src.track.id.id));
 
             int groupB = endpointIDs.getOrDefault(link.dst, -1);
             if (groupB == -1)
-                throw new InvalidInfraException(String.format("unknown track section: %s", link.dst.section.id));
+                throw new InvalidInfraException(String.format("unknown track section: %s", link.dst.track.id.id));
 
             uf.union(groupA, groupB);
         }

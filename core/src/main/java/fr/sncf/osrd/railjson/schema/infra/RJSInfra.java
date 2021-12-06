@@ -15,8 +15,6 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 public class RJSInfra {
     /** Moshi adapter used to serialize and deserialize RJSInfra */
@@ -69,7 +67,7 @@ public class RJSInfra {
 
     /** The map of switch types */
     @Json(name = "switch_types")
-    public Map<String, RJSSwitchType> switchTypes;
+    public List<RJSSwitchType> switchTypes;
 
     public List<RJSSignal> signals;
 
@@ -88,7 +86,7 @@ public class RJSInfra {
             Collection<RJSRoute> routes,
             Collection<RJSAspect> aspects,
             List<RJSRSFunction> signalFunctions,
-            Map<String, RJSSwitchType> switchTypes,
+            List<RJSSwitchType> switchTypes,
             List<RJSSignal> signals,
             List<RJSBufferStop> bufferStops,
             List<RJSTrainDetector> detectors
@@ -121,7 +119,7 @@ public class RJSInfra {
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
-                new HashMap<>(),
+                new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>()

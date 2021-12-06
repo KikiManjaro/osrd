@@ -16,10 +16,7 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.ObjectRef;
-import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
-import fr.sncf.osrd.railjson.schema.infra.RJSTVDSection;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.*;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSTrackRange;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.DoubleRangeMap;
@@ -179,9 +176,9 @@ public class RailJSONParser {
             signals.add(signal);
             if (rjsSignal.linkedDetector != null) {
                 if (rjsSignal.direction == EdgeDirection.START_TO_STOP)
-                    detectorIdToSignalNormalMap.put(rjsSignal.linkedDetector.id, signal);
+                    detectorIdToSignalNormalMap.put(rjsSignal.linkedDetector.id.id, signal);
                 else
-                    detectorIdToSignalReverseMap.put(rjsSignal.linkedDetector.id, signal);
+                    detectorIdToSignalReverseMap.put(rjsSignal.linkedDetector.id.id, signal);
             }
         }
 
@@ -199,11 +196,16 @@ public class RailJSONParser {
                 var port = entry.getValue();
                 switchRef.ports.add(new Switch.Port(
                         portName,
-                        infraTrackSections.get(port.section.id),
+                        infraTrackSections.get(port.track.id),
                         port.endpoint
                 ));
             }
         }
+
+        // Create switch type map
+        var switchTypeMap = new HashMap<String, RJSSwitchType>();
+        for (var rjsSwitchType : railJSON.switchTypes)
+            switchTypeMap.put(rjsSwitchType.id, rjsSwitchType);
 
         // Fill switch groups
         for (var rjsSwitch : railJSON.switches) {
@@ -216,12 +218,12 @@ public class RailJSONParser {
                         portName,
                         new Switch.Port(
                                 portName,
-                                infraTrackSections.get(port.section.id),
+                                infraTrackSections.get(port.track.id),
                                 port.endpoint
                         )
                 );
             }
-            for (var entry : parseRef(rjsSwitch.switchType, railJSON.switchTypes).groups.entrySet()) {
+            for (var entry : parseRef(rjsSwitch.switchType, switchTypeMap).groups.entrySet()) {
                 var group = entry.getKey();
                 var edges = new ArrayList<Switch.PortEdge>();
                 for (var e : entry.getValue()) {
@@ -240,8 +242,8 @@ public class RailJSONParser {
         for (var trackSectionLink : railJSON.trackSectionLinks) {
             var begin = trackSectionLink.src;
             var end = trackSectionLink.dst;
-            var beginEdge = infraTrackSections.get(begin.section.id);
-            var endEdge = infraTrackSections.get(end.section.id);
+            var beginEdge = parseRef(begin.track, infraTrackSections);
+            var endEdge = parseRef(end.track, infraTrackSections);
             var direction = trackSectionLink.navigability;
             linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint, direction);
         }
@@ -408,8 +410,8 @@ public class RailJSONParser {
             HashMap<String, TVDSection> tvdSectionsMap,
             HashMap<String, TrackSection> infraTrackSections,
             TrackGraph trackGraph, HashMap<String, Waypoint> waypointsMap,
-            HashMap<String, Signal> detectorIdToSignalReverseMap,
             HashMap<String, Signal> detectorIdToSignalNormalMap,
+            HashMap<String, Signal> detectorIdToSignalReverseMap,
             RJSRoute rjsRoute
     ) throws InvalidInfraException {
         // Parse release groups

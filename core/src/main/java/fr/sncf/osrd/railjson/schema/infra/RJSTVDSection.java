@@ -18,7 +18,7 @@ public class RJSTVDSection implements Identified {
     public boolean isBerthingTrack;
 
     /** List of train detectors in the tvd section */
-    @Json(name = "train_detectors")
+    @Json(name = "detectors")
     public Collection<ObjectRef<RJSTrainDetector>> trainDetectors;
 
     /** List of buffer stops in the tvd section */
