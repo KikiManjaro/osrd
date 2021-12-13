@@ -48,6 +48,11 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     public int stopIndex;
 
+    public double lastStopPosition;
+    public double nextDepartureTime;
+    public double delayWhenStopped;
+
+
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean deepEquals(TrainState o) {
@@ -83,7 +88,10 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             ArrayDeque<Interaction> actionPointsUnderTrain,
             TrainPath path,
             int routeIndex,
-            int stopIndex
+            int stopIndex,
+            double lastStopPosition,
+            double nextDepartureTime,
+            double delayWhenStopped
     ) {
         this.time = time;
         this.location = location;
@@ -97,6 +105,9 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.path = path;
         this.routeIndex = routeIndex;
         this.stopIndex = stopIndex;
+        this.lastStopPosition = lastStopPosition;
+        this.nextDepartureTime = nextDepartureTime;
+        this.delayWhenStopped = delayWhenStopped;
     }
 
     /** Create a clone */
@@ -113,7 +124,10 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 new ArrayDeque<>(actionPointsUnderTrain),
                 new TrainPath(path),
                 routeIndex,
-                stopIndex
+                stopIndex,
+                lastStopPosition,
+                nextDepartureTime,
+                delayWhenStopped
         );
     }
 
@@ -136,7 +150,11 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     new ArrayDeque<>(actionPointsUnderTrain),
                     new TrainPath(path),
                     routeIndex,
-                    stopIndex);
+                    stopIndex,
+                    lastStopPosition,
+                    nextDepartureTime,
+                    delayWhenStopped
+            );
         var nextPhase = currentPhaseIndex + 1;
         var nextPhaseState = trainSchedule.phases.get(nextPhase).getState(sim, trainSchedule);
         nextPhaseState.addAspectConstraints(signalControllers);
@@ -151,7 +169,10 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 new ArrayDeque<>(actionPointsUnderTrain),
                 new TrainPath(path),
                 routeIndex,
-                stopIndex
+                stopIndex,
+                lastStopPosition,
+                nextDepartureTime,
+                delayWhenStopped
         );
     }
 
